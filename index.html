@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>test</title>
+</head>
+<body>
+	<div id="myGame"></div>
+</body>
+</html>
+<script>
+	"use strict";
+	
+	var canvas = document.getElementById("myGame"); 
+
+	// розмір поля за замовчуванням
+	var size = 3;
+	// к-ть об’єктів в рядок для виграшу
+	var forWin = 3;
+
+	// false = user 1 = [x]
+	// true = user 2 = [o]
+	var turn = false;
+
+	var field = new Array(size); 
+
+	var ESymbbol = "[G]";
+	var XSymbbol = "[X]";
+	var OSymbbol = "[O]";
+
+	var empty =  "<span onclick='playerClick(event,this);' class='object empty' style='font-size: 32px; line-height: 1.5;'>" + ESymbbol + "</span>";
+	var XField = "<span onclick='playerClick();' class='object X' style='font-size: 32px; color: red; line-height: 1.5;'>" + XSymbbol + "</span>";
+	var OField = "<span onclick='playerClick();' class='object O' style='font-size: 32px; color: blue; line-height: 1.5;'>" + OSymbbol + "</span>";
+	var nextLine = "</br>";
+
+	// вивести щось в щось
+	function outputClear(where, what) {
+		where.innerHTML = what;
+	}	
+
+	// вивести щось в щось після чогось
+	function output(where, what) {
+		// чого не працює в Мозілі - не можу пояснити :/
+		// where.insertAdjacentHTML("beforeend",what);
+		where.innerHTML += what;
+	}	
+
+	// очостити блок
+	function clearCanvas(block){
+		block.innerHTML = "";
+	}
+
+	// онуляє ігрове поле
+	function init(mas){
+		ask();
+		for (var i = 0; i < size; i++) {
+			mas[i] = [];
+			for (var j = 0; j < size; j++) {
+				mas[i][j] = 0;
+			}
+		}
+	}
+
+	// перевірка комірки
+	function checkState(obj,posX,posY){
+		if (obj == 0) {
+			output(canvas, "<span onclick='playerClick(event,this);' x=" + posX + " y=" + posY + " class='object empty' style='font-size: 32px; line-height: 1.5;'>" + ESymbbol + "</span>");	
+		}
+		else if(obj == 1){
+			output(canvas, "<span onclick='playerClick();' x=" + posX + " y=" + posY + " class='object X' style='font-size: 32px; color: red; line-height: 1.5;'>" + XSymbbol + "</span>");
+		}
+		else{
+			output(canvas, "<span onclick='playerClick();' x=" + posX + " y=" + posY + " class='object O' style='font-size: 32px; color: blue; line-height: 1.5;'>" + OSymbbol + "</span>");
+		}	
+	}
+
+	// виводить поле на екран в форматі [-]
+	function draw(mas){
+		for (var i = 0; i < size; i++) {
+			for (var j = 0; j < size; j++) {
+				checkState(mas[i][j],j,i);
+			}
+			output(canvas,nextLine);
+		}
+	}
+
+	// біжить по кожному елементу масиву та викликає функцію перевірки
+	function moveIndex(mas,playerIndex,counter){
+		for (var y = 0; y < size; y++) {
+			for (var x = 0; x < size; x++) {
+				// console.log("x=" + x + " y=" + y);
+				checkHorizontal(mas,x,y,counter,playerIndex);
+				checkVertical(mas,x,y,counter,playerIndex);
+				checkDiagonalRight(mas,x,y,counter,playerIndex);
+				checkDiagonalLeft(mas,x,y,counter,playerIndex);
+			}
+		}		
+	}	
+
+	// перевірка горизонталі
+	function checkHorizontal(mas,x,y,counter,playerIndex){
+		var count = 0;
+		if (x + counter > size) {
+			count = 0;
+		}else{
+			for (var s = 0; s < counter; s++) {
+				if (mas[y][x+s] == playerIndex) {
+					count++;
+					if (count == counter) {
+						alert("Player " + playerIndex + "- won!");
+						outputClear(canvas,"");
+						init(field);
+						draw(field);
+					}
+				}else{
+					count = 0;
+				}
+			}
+		}
+	}
+
+	// певевірка вертикалі
+	function checkVertical(mas,x,y,counter,playerIndex){
+		var count = 0;
+		if (y + counter > size) {
+			count = 0;
+			// console.log("break - w");
+		}else{
+			for (var s = 0; s < counter; s++) {
+				if (mas[y+s][x] == playerIndex) {
+					count++;
+					if (count == counter) {
+						alert("Player " + playerIndex + "- won!");
+						outputClear(canvas,"");
+						init(field);
+						draw(field);
+					}
+				}else{
+					count = 0;
+				}
+			}
+		}
+	}
+
+	// перевірка діагоналі вправо
+	function checkDiagonalRight(mas,x,y,counter,playerIndex){
+		var count = 0;
+		if (y + counter > size || x + counter > size) {
+			count = 0;
+		}else{
+			for (var s = 0; s < counter; s++) {
+				if (mas[y+s][x+s] == playerIndex) {
+					count++;
+					if (count == counter) {
+						alert("Player " + playerIndex + "- won!");
+						outputClear(canvas,"");
+						init(field);
+						draw(field);
+					}
+				}else{
+					count = 0;
+				}
+			}		
+		}
+	}
+
+	// перевірка діагоналі вліво
+	function checkDiagonalLeft(mas,x,y,counter,playerIndex){
+		var count = 0;
+		if (y + counter > size) {
+			count = 0;
+		}else if(x < (counter-1)){
+			count = 0;
+		}else{
+			for (var s = 0; s < counter; s++) {
+				if (mas[y+s][x-s] == playerIndex) {
+					count++;
+					if (count == counter) {
+						alert("Player " + playerIndex + "- won!");
+						outputClear(canvas,"");
+						init(field);
+						draw(field);
+					}
+				}
+				else{
+					count = 0;
+				}
+			}
+		}
+	}
+
+	// натискання на ігрове поле
+	function playerClick(event,element){
+		if (element.innerHTML == ESymbbol) {
+			if (turn) {
+				element.innerHTML = OField;
+				field[element.getAttribute("y")][element.getAttribute("x")] = 2;
+				moveIndex(field,2,forWin);
+				turn = false;
+			}else{
+				element.innerHTML = XField;
+				field[element.getAttribute("y")][element.getAttribute("x")] = 1;
+				moveIndex(field,1,forWin);
+				turn = true;
+			}	
+		}
+	}
+
+	// запит на розмір поля
+	function ask(){
+		var adSize = prompt("enter field size");
+		if (!isNaN(parseInt(adSize)) && isFinite(adSize)) {
+			var near = parseInt(adSize);
+			if (near < size) {
+				alert("to small. enter > 2");
+				ask();
+			}else{
+				size = near;
+			}
+		}else{
+			alert("is not number");
+			ask();
+		}
+	}
+
+	init(field);
+	draw(field);
+
+</script>
